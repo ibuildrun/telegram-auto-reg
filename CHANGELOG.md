@@ -1,3 +1,15 @@
+# [1.0.0](https://github.com/ibuildrun/telegram-auto-reg/compare/v0.1.1...v1.0.0) (2025-12-29)
+
+
+### Code Refactoring
+
+* split emulator and windows_automation into packages ([d0ba450](https://github.com/ibuildrun/telegram-auto-reg/commit/d0ba450b79e2d4c4a33b71010969693fac4ce548))
+
+
+### BREAKING CHANGES
+
+* Import paths changed from auto_reger.emulator to auto_reger.emulator.Telegram
+
 ## [0.1.1](https://github.com/ibuildrun/telegram-auto-reg/compare/v0.1.0...v0.1.1) (2025-12-29)
 
 
