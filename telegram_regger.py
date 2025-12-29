@@ -21,7 +21,7 @@ from auto_reger.utils import read_json, write_json, load_names, get_device_confi
     load_config, download_random_avatar
 from auto_reger.sms_api import SmsApi, remove_activation_from_json, save_activation_to_json, can_set_status_8
 from auto_reger.emulator import Telegram
-from auto_reger.windows_automation import Onion, VPN, TelegramDesktop
+from auto_reger.windows import Onion, VPN, TelegramDesktop
 from auto_reger.tdesktop import get_auth_key_and_dc_id
 from selenium.webdriver.common.by import By
 from telethon.tl.functions.contacts import ResolveUsernameRequest
