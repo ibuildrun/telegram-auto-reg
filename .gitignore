@@ -24,7 +24,8 @@ logs/
 tmp/
 *.tdata
 *.session
-*.json
+activations.json
+cech.json
 *_report.json
 *_sales_report.json
 
