@@ -1,3 +1,10 @@
+## [0.1.1](https://github.com/ibuildrun/telegram-auto-reg/compare/v0.1.0...v0.1.1) (2025-12-29)
+
+
+### Bug Fixes
+
+* update gitignore to allow config json files ([e537e95](https://github.com/ibuildrun/telegram-auto-reg/commit/e537e95fab577602410e160fac8156733bac7acd))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
