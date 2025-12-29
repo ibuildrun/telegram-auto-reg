@@ -1,3 +1,6 @@
+# Kiro AI configuration (separate private repo)
+.kiro/
+
 # Python
 __pycache__/
 *.py[cod]
