@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+
+# venv
+.venv/
+env/
+venv/
+
+# IDE
+.idea/
+.vscode/
+
+# Data / временные файлы
+data/
+sessions/
+logs/
+tmp/
+*.tdata
+*.session
+*.json
+*_report.json
+*_sales_report.json
+
+# Секреты / токены / приватное
+config.yaml
+*_proxies.txt
+*lzt_token*.txt
+*.key
+*.pem
