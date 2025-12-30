@@ -4,8 +4,10 @@ Dark theme with custom title bar and window controls.
 """
 
 import customtkinter as ctk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 import webbrowser
+
+from .config_manager import load_config, save_config
 
 
 # Theme setup
@@ -478,46 +480,308 @@ class TelegramAutoRegApp(ctk.CTk):
         info.pack(pady=15)
     
     def _on_settings(self):
-        """Show settings view."""
+        """Show settings editor."""
         self._clear_content()
         
+        # Load current config
+        self.config = load_config()
+        
+        # Create scrollable frame
+        scroll_frame = ctk.CTkScrollableFrame(
+            self.content_frame, 
+            fg_color="transparent",
+            scrollbar_button_color="#2a2a2a",
+            scrollbar_button_hover_color="#3a3a3a"
+        )
+        scroll_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        
         title = ctk.CTkLabel(
-            self.content_frame,
+            scroll_frame,
             text="══ SETTINGS ══",
             font=ctk.CTkFont(size=16, weight="bold"),
             text_color=self.accent
         )
-        title.pack(pady=(25, 20))
+        title.pack(pady=(10, 20))
         
-        settings_frame = ctk.CTkFrame(self.content_frame, fg_color="transparent")
-        settings_frame.pack(fill="x", padx=35)
+        # === SMS API Section ===
+        self._create_section_header(scroll_frame, "SMS API")
         
-        settings = [
-            ("SMS Provider", "sms-activate"),
-            ("Device Type", "Emulator"),
-            ("Appium Port", "4723"),
-            ("VPN", "ExpressVPN"),
-            ("Email Service", "Onion Mail"),
-        ]
+        # Provider
+        self._create_label(scroll_frame, "SMS Provider")
+        self.sms_provider_var = ctk.StringVar(value=self.config.get("sms_api", {}).get("provider", "sms-activate"))
+        sms_provider = ctk.CTkOptionMenu(
+            scroll_frame,
+            values=["sms-activate", "grizzly-sms", "5sim", "smshub"],
+            variable=self.sms_provider_var,
+            fg_color="#1a1a1a",
+            button_color="#2a2a2a",
+            width=350, height=35
+        )
+        sms_provider.pack(anchor="w", padx=20, pady=(0, 10))
         
-        for label, value in settings:
-            row = ctk.CTkFrame(settings_frame, fg_color="#1a1a1a", corner_radius=6, height=42)
-            row.pack(fill="x", pady=2)
-            row.pack_propagate(False)
-            
-            lbl = ctk.CTkLabel(row, text=label, text_color=self.text_dim, font=ctk.CTkFont(size=12))
-            lbl.pack(side="left", padx=18)
-            
-            val = ctk.CTkLabel(row, text=value, text_color=self.accent, font=ctk.CTkFont(size=12))
-            val.pack(side="right", padx=18)
+        # API Key
+        self._create_label(scroll_frame, "SMS API Key")
+        self.sms_api_key = ctk.CTkEntry(
+            scroll_frame, width=350, height=35,
+            fg_color="#1a1a1a", border_color="#2a2a2a",
+            placeholder_text="Enter your SMS API key..."
+        )
+        self.sms_api_key.insert(0, self.config.get("sms_api", {}).get("api_key", ""))
+        self.sms_api_key.pack(anchor="w", padx=20, pady=(0, 15))
         
-        note = ctk.CTkLabel(
-            self.content_frame,
-            text="Edit config.yaml to change settings",
-            font=ctk.CTkFont(size=11, slant="italic"),
+        # === Telethon API Section ===
+        self._create_section_header(scroll_frame, "Telegram API (Telethon)")
+        
+        # API ID
+        self._create_label(scroll_frame, "API ID")
+        self.api_id_entry = ctk.CTkEntry(
+            scroll_frame, width=350, height=35,
+            fg_color="#1a1a1a", border_color="#2a2a2a",
+            placeholder_text="Get from my.telegram.org"
+        )
+        self.api_id_entry.insert(0, str(self.config.get("telethon", {}).get("api_id", "")))
+        self.api_id_entry.pack(anchor="w", padx=20, pady=(0, 10))
+        
+        # API Hash
+        self._create_label(scroll_frame, "API Hash")
+        self.api_hash_entry = ctk.CTkEntry(
+            scroll_frame, width=350, height=35,
+            fg_color="#1a1a1a", border_color="#2a2a2a",
+            placeholder_text="Get from my.telegram.org"
+        )
+        self.api_hash_entry.insert(0, self.config.get("telethon", {}).get("api_hash", ""))
+        self.api_hash_entry.pack(anchor="w", padx=20, pady=(0, 15))
+        
+        # === ADB Section ===
+        self._create_section_header(scroll_frame, "ADB / Emulator")
+        
+        # Device Type
+        self._create_label(scroll_frame, "Device Type")
+        self.device_type_var = ctk.StringVar(value=self.config.get("adb", {}).get("device_type", "E"))
+        device_type = ctk.CTkOptionMenu(
+            scroll_frame,
+            values=["E (Emulator)", "P (Physical)"],
+            variable=self.device_type_var,
+            fg_color="#1a1a1a",
+            button_color="#2a2a2a",
+            width=350, height=35
+        )
+        device_type.pack(anchor="w", padx=20, pady=(0, 10))
+        
+        # Device UDID
+        self._create_label(scroll_frame, "Device UDID")
+        self.device_udid = ctk.CTkEntry(
+            scroll_frame, width=350, height=35,
+            fg_color="#1a1a1a", border_color="#2a2a2a",
+            placeholder_text="127.0.0.1:5555"
+        )
+        self.device_udid.insert(0, self.config.get("adb", {}).get("device_udid", "127.0.0.1:5555"))
+        self.device_udid.pack(anchor="w", padx=20, pady=(0, 10))
+        
+        # Appium Port
+        self._create_label(scroll_frame, "Appium Port")
+        self.appium_port = ctk.CTkEntry(
+            scroll_frame, width=350, height=35,
+            fg_color="#1a1a1a", border_color="#2a2a2a"
+        )
+        self.appium_port.insert(0, str(self.config.get("adb", {}).get("appium_port", 4723)))
+        self.appium_port.pack(anchor="w", padx=20, pady=(0, 10))
+        
+        # ADB Path
+        self._create_label(scroll_frame, "ADB Path")
+        adb_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
+        adb_frame.pack(anchor="w", padx=20, pady=(0, 15))
+        
+        self.adb_path = ctk.CTkEntry(
+            adb_frame, width=280, height=35,
+            fg_color="#1a1a1a", border_color="#2a2a2a"
+        )
+        self.adb_path.insert(0, self.config.get("adb", {}).get("adb_path", ""))
+        self.adb_path.pack(side="left")
+        
+        browse_btn = ctk.CTkButton(
+            adb_frame, text="...", width=60, height=35,
+            fg_color="#2a2a2a", hover_color="#3a3a3a",
+            command=self._browse_adb_path
+        )
+        browse_btn.pack(side="left", padx=(10, 0))
+        
+        # === VPN Section ===
+        self._create_section_header(scroll_frame, "VPN")
+        
+        self.vpn_enabled = ctk.BooleanVar(value=self.config.get("vpn", {}).get("enabled", True))
+        vpn_cb = ctk.CTkCheckBox(
+            scroll_frame, text="Enable VPN rotation",
+            variable=self.vpn_enabled,
+            fg_color=self.accent, hover_color="#cccccc",
+            text_color=self.accent
+        )
+        vpn_cb.pack(anchor="w", padx=20, pady=(0, 10))
+        
+        self._create_label(scroll_frame, "VPN Provider")
+        self.vpn_provider_var = ctk.StringVar(value=self.config.get("vpn", {}).get("provider", "ExpressVPN"))
+        vpn_provider = ctk.CTkOptionMenu(
+            scroll_frame,
+            values=["ExpressVPN", "NordVPN", "Surfshark", "ProtonVPN"],
+            variable=self.vpn_provider_var,
+            fg_color="#1a1a1a",
+            button_color="#2a2a2a",
+            width=350, height=35
+        )
+        vpn_provider.pack(anchor="w", padx=20, pady=(0, 15))
+        
+        # === Proxy Section ===
+        self._create_section_header(scroll_frame, "Proxy")
+        
+        self.proxy_enabled = ctk.BooleanVar(value=self.config.get("proxy", {}).get("enabled", False))
+        proxy_cb = ctk.CTkCheckBox(
+            scroll_frame, text="Enable proxy",
+            variable=self.proxy_enabled,
+            fg_color=self.accent, hover_color="#cccccc",
+            text_color=self.accent
+        )
+        proxy_cb.pack(anchor="w", padx=20, pady=(0, 10))
+        
+        self._create_label(scroll_frame, "Proxy Type")
+        self.proxy_type_var = ctk.StringVar(value=self.config.get("proxy", {}).get("type", "SOCKS5"))
+        proxy_type = ctk.CTkOptionMenu(
+            scroll_frame,
+            values=["SOCKS5", "HTTP", "HTTPS"],
+            variable=self.proxy_type_var,
+            fg_color="#1a1a1a",
+            button_color="#2a2a2a",
+            width=350, height=35
+        )
+        proxy_type.pack(anchor="w", padx=20, pady=(0, 10))
+        
+        # Proxy Host:Port
+        proxy_row = ctk.CTkFrame(scroll_frame, fg_color="transparent")
+        proxy_row.pack(anchor="w", padx=20, pady=(0, 10))
+        
+        self._create_label(proxy_row, "Host", pack=False)
+        self.proxy_host = ctk.CTkEntry(
+            proxy_row, width=220, height=35,
+            fg_color="#1a1a1a", border_color="#2a2a2a",
+            placeholder_text="proxy.example.com"
+        )
+        self.proxy_host.insert(0, self.config.get("proxy", {}).get("host", ""))
+        self.proxy_host.pack(side="left", padx=(0, 10))
+        
+        self.proxy_port = ctk.CTkEntry(
+            proxy_row, width=100, height=35,
+            fg_color="#1a1a1a", border_color="#2a2a2a",
+            placeholder_text="Port"
+        )
+        self.proxy_port.insert(0, self.config.get("proxy", {}).get("port", ""))
+        self.proxy_port.pack(side="left")
+        
+        # Proxy Auth
+        auth_row = ctk.CTkFrame(scroll_frame, fg_color="transparent")
+        auth_row.pack(anchor="w", padx=20, pady=(0, 15))
+        
+        self.proxy_user = ctk.CTkEntry(
+            auth_row, width=165, height=35,
+            fg_color="#1a1a1a", border_color="#2a2a2a",
+            placeholder_text="Username (optional)"
+        )
+        self.proxy_user.insert(0, self.config.get("proxy", {}).get("username", ""))
+        self.proxy_user.pack(side="left", padx=(0, 10))
+        
+        self.proxy_pass = ctk.CTkEntry(
+            auth_row, width=165, height=35,
+            fg_color="#1a1a1a", border_color="#2a2a2a",
+            placeholder_text="Password (optional)",
+            show="•"
+        )
+        self.proxy_pass.insert(0, self.config.get("proxy", {}).get("password", ""))
+        self.proxy_pass.pack(side="left")
+        
+        # === Save Button ===
+        save_btn = ctk.CTkButton(
+            scroll_frame,
+            text="💾  Save Settings",
+            font=ctk.CTkFont(size=14, weight="bold"),
+            fg_color=self.accent,
+            text_color=self.bg_dark,
+            hover_color="#cccccc",
+            height=45,
+            width=350,
+            corner_radius=8,
+            command=self._save_settings
+        )
+        save_btn.pack(anchor="w", padx=20, pady=(20, 30))
+    
+    def _create_section_header(self, parent, text):
+        """Create a section header."""
+        header = ctk.CTkLabel(
+            parent,
+            text=f"─── {text} ───",
+            font=ctk.CTkFont(size=13, weight="bold"),
             text_color=self.text_dim
         )
-        note.pack(pady=15)
+        header.pack(anchor="w", padx=20, pady=(15, 10))
+    
+    def _create_label(self, parent, text, pack=True):
+        """Create a form label."""
+        label = ctk.CTkLabel(
+            parent,
+            text=text,
+            font=ctk.CTkFont(size=12),
+            text_color=self.text_dim
+        )
+        if pack:
+            label.pack(anchor="w", padx=20, pady=(0, 3))
+        return label
+    
+    def _browse_adb_path(self):
+        """Browse for ADB executable."""
+        path = filedialog.askopenfilename(
+            title="Select ADB executable",
+            filetypes=[("Executable", "*.exe"), ("All files", "*.*")]
+        )
+        if path:
+            self.adb_path.delete(0, "end")
+            self.adb_path.insert(0, path)
+    
+    def _save_settings(self):
+        """Save all settings to config file."""
+        try:
+            # Build config dict
+            config = {
+                "sms_api": {
+                    "provider": self.sms_provider_var.get(),
+                    "api_key": self.sms_api_key.get(),
+                },
+                "telethon": {
+                    "api_id": self.api_id_entry.get(),
+                    "api_hash": self.api_hash_entry.get(),
+                },
+                "adb": {
+                    "device_type": self.device_type_var.get()[0],  # Get first char (E or P)
+                    "device_udid": self.device_udid.get(),
+                    "appium_port": int(self.appium_port.get() or 4723),
+                    "adb_path": self.adb_path.get(),
+                },
+                "vpn": {
+                    "enabled": self.vpn_enabled.get(),
+                    "provider": self.vpn_provider_var.get(),
+                },
+                "proxy": {
+                    "enabled": self.proxy_enabled.get(),
+                    "type": self.proxy_type_var.get(),
+                    "host": self.proxy_host.get(),
+                    "port": self.proxy_port.get(),
+                    "username": self.proxy_user.get(),
+                    "password": self.proxy_pass.get(),
+                },
+            }
+            
+            if save_config(config):
+                messagebox.showinfo("Success", "Settings saved successfully!")
+            else:
+                messagebox.showerror("Error", "Failed to save settings")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save settings: {e}")
     
     def _on_check_config(self):
         """Check configuration."""
