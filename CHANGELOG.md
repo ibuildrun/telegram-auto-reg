@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/ibuildrun/telegram-auto-reg/compare/v1.0.0...v1.1.0) (2025-12-30)
+
+
+### Features
+
+* **cli:** add modern black & white TUI interface ([136a7ac](https://github.com/ibuildrun/telegram-auto-reg/commit/136a7ac2ef79427e8bd088550cb3e844842b597a))
+
 # [1.0.0](https://github.com/ibuildrun/telegram-auto-reg/compare/v0.1.1...v1.0.0) (2025-12-29)
 
 
