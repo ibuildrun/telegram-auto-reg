@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/ibuildrun/telegram-auto-reg/compare/v1.1.0...v1.2.0) (2025-12-30)
+
+
+### Features
+
+* add infrastructure improvements ([e9cd40a](https://github.com/ibuildrun/telegram-auto-reg/commit/e9cd40ad807d12b28d80dbd6fbcd10801443fd90))
+
 # [1.1.0](https://github.com/ibuildrun/telegram-auto-reg/compare/v1.0.0...v1.1.0) (2025-12-30)
 
 
