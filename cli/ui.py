@@ -354,10 +354,10 @@ def show_config_check(valid: bool, errors: list = None):
         result = """
 [bold white]● Configuration Valid[/]
 
-[white]✓[/] config.yaml found
-[white]✓[/] ADB connection OK
-[white]✓[/] SMS API key valid
-[white]✓[/] All paths exist
+[white]+[/] config.yaml found
+[white]+[/] ADB connection OK
+[white]+[/] SMS API key valid
+[white]+[/] All paths exist
 """
     else:
         error_list = "\n".join(f"[white]○[/] {e}" for e in (errors or ["Unknown error"]))

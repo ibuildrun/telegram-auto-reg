@@ -97,7 +97,7 @@ class Converter:
             session_mgr = SessionManager(auth_key=auth_key_bytes, user_id=user_id, dc_id=dc_id)
             await session_mgr.to_telethon_file(str(session_path))
 
-            print(f'✅ Converted TData "{account_name}" → {session_path}')
+            print(f'[+] Converted TData "{account_name}" -> {session_path}')
             logger.info('Converted TData "%s" to session %s', account_name, session_path)
             return True
         except Exception as e:
@@ -374,25 +374,25 @@ def set_2fa_safe(
         )
 
         if password:
-            print("✅ Cloud password set successfully:", result)
+            print("[+] Cloud password set successfully:", result)
         else:
-            print("✅ Cloud password reset successfully:", result)
+            print("[+] Cloud password reset successfully:", result)
 
     except FloodError as e:
         if getattr(e, "seconds", None):
             hours = round(e.seconds / 3600, 2)
-            print(f"⏳ FloodError: password change is temporarily locked. Wait {e.seconds} seconds (~{hours} h).")
+            print(f"[!] FloodError: password change is temporarily locked. Wait {e.seconds} seconds (~{hours} h).")
         else:
-            print("⏳ FloodError: method is frozen for this account (FROZEN_METHOD_INVALID).")
+            print("[!] FloodError: method is frozen for this account (FROZEN_METHOD_INVALID).")
 
     except PasswordHashInvalidError:
-        print("❌ Invalid current password (cur_password).")
+        print("[-] Invalid current password (cur_password).")
 
     except SessionPasswordNeededError:
-        print("⚠️ This account already has a password set. You must pass cur_password.")
+        print("[!] This account already has a password set. You must pass cur_password.")
 
     except Exception as e:
-        print("⚠️ Unexpected error while changing 2FA password:", repr(e))
+        print("[!] Unexpected error while changing 2FA password:", repr(e))
 
     finally:
         try:

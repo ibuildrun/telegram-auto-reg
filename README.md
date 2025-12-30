@@ -194,6 +194,17 @@ Telegrm-Auto-Regger/
 
 ## Installation
 
+### Option 1: Download Pre-built Executable (Recommended)
+
+Download the latest `TelegramAutoReg.exe` from [Releases](https://github.com/ibuildrun/telegram-auto-reg/releases).
+
+No Python installation required! Just:
+1. Download `TelegramAutoReg.exe`
+2. Copy `config.yaml.example` to `config.yaml` and configure
+3. Run the executable
+
+### Option 2: Run from Source
+
 ### Python dependencies
 
 Requirements:
@@ -352,6 +363,44 @@ If something goes wrong, check:
 - `telegram_regger.log` – detailed runtime logs.
 - `cech.json` – simple aggregated stats.
 - `activations.json` – currently tracked SMS activations.
+
+---
+
+## Building Executable
+
+To create a standalone `.exe` file that doesn't require Python:
+
+### Prerequisites
+
+```bash
+pip install pyinstaller
+```
+
+### Build
+
+```bash
+# Simple build
+python build.py
+
+# Or manually
+pyinstaller TelegramAutoReg.spec
+```
+
+The executable will be created in `dist/TelegramAutoReg.exe` (~50-100 MB).
+
+### Custom Icon
+
+Place your icon file at `assets/icon.ico` before building. Recommended size: 256x256.
+
+### Distribution
+
+To distribute the application:
+1. Build the `.exe`
+2. Include `config.yaml.example` alongside the executable
+3. Users just need to:
+   - Rename `config.yaml.example` to `config.yaml`
+   - Fill in their API keys
+   - Run `TelegramAutoReg.exe`
 
 ---
 
