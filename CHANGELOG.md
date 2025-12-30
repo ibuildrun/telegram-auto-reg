@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/ibuildrun/telegram-auto-reg/compare/v1.3.0...v1.4.0) (2025-12-30)
+
+
+### Features
+
+* add build system, real stats, remove emojis from codebase ([2c0f069](https://github.com/ibuildrun/telegram-auto-reg/commit/2c0f0697f890869926d3df9f379e06b351e287f6))
+
 # [1.3.0](https://github.com/ibuildrun/telegram-auto-reg/compare/v1.2.0...v1.3.0) (2025-12-30)
 
 
