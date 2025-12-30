@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/ibuildrun/telegram-auto-reg/compare/v1.2.0...v1.3.0) (2025-12-30)
+
+
+### Features
+
+* add Help page with RU/EN instructions ([b1e3e9d](https://github.com/ibuildrun/telegram-auto-reg/commit/b1e3e9d988eb9726ad30fb84ca6f1dac4cb24d44))
+
 # [1.2.0](https://github.com/ibuildrun/telegram-auto-reg/compare/v1.1.0...v1.2.0) (2025-12-30)
 
 
