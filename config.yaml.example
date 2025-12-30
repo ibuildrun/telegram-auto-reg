@@ -1,0 +1,119 @@
+# Telegram Auto-Regger Configuration
+# Copy this file to config.yaml and fill in your values
+
+# =============================================================================
+# External Tool Paths
+# =============================================================================
+paths:
+  # Path to Google Chrome executable
+  chrome: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+  
+  # Path to ExpressVPN executable
+  expressvpn: "C:\\Program Files (x86)\\ExpressVPN\\expressvpn-ui\\ExpressVPN.exe"
+  
+  # Path to ADB executable
+  adb: "C:\\Android\\platform-tools\\adb.exe"
+  
+  # Path to Telegram Desktop (leave empty for auto-detection from %APPDATA%)
+  telegram_desktop: ""
+
+# =============================================================================
+# ADB / Emulator Settings
+# =============================================================================
+adb:
+  # Device type: "E" for emulator, "P" for physical device
+  device_type: "E"
+  
+  # Device UDID from `adb devices` output
+  device_udid: "127.0.0.1:5555"
+  
+  # Appium server port (1024-65535)
+  appium_port: 4723
+  
+  # Path to ADB executable (can use $ANDROID_HOME environment variable)
+  adb_path: "$ANDROID_HOME\\platform-tools\\adb.exe"
+
+# =============================================================================
+# SMS Provider Settings
+# =============================================================================
+sms:
+  # Provider name: "sms-activate", "grizzly-sms", "5sim", "smshub"
+  provider: "sms-activate"
+  
+  # API key (either direct value or file path)
+  api_key: ""
+  
+  # Alternative: path to file containing API key (one line)
+  api_key_file: "sms_api_key.txt"
+  
+  # Default country for number rental
+  default_country: "russia"
+  
+  # Maximum price per number in provider's currency
+  max_price: 50.0
+
+# =============================================================================
+# Proxy Settings
+# =============================================================================
+proxy:
+  # Enable proxy usage
+  enabled: false
+  
+  # Path to proxy list file (one proxy per line)
+  # Format: ip:port or ip:port:username:password
+  proxy_file: "proxies.txt"
+  
+  # Proxy type: "socks5", "http", "https"
+  proxy_type: "socks5"
+
+# =============================================================================
+# VPN Settings
+# =============================================================================
+vpn:
+  # Enable VPN rotation
+  enabled: true
+  
+  # VPN provider: "ExpressVPN", "NordVPN"
+  provider: "ExpressVPN"
+  
+  # Auto-rotate between registrations
+  auto_rotate: true
+  
+  # Preferred locations for rotation
+  locations:
+    - "USA"
+    - "UK"
+    - "Germany"
+    - "Netherlands"
+
+# =============================================================================
+# Telethon API Settings
+# =============================================================================
+telethon:
+  # Get these from https://my.telegram.org/apps
+  api_id: 0
+  api_hash: ""
+  
+  # Device info for Telegram client
+  device_model: "Android"
+  system_version: "10"
+  app_version: "10.0.0"
+
+# =============================================================================
+# Logging Settings
+# =============================================================================
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR
+  level: "INFO"
+  
+  # Log file path
+  file: "telegram_regger.log"
+  
+  # Use JSON format for logs (useful for log aggregation)
+  json_format: false
+  
+  # Per-module log levels (optional)
+  module_levels:
+    selenium: "WARNING"
+    urllib3: "WARNING"
+    appium: "WARNING"

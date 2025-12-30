@@ -304,7 +304,7 @@ class TelegramAutoRegApp(ctk.CTk):
         
         # Stats cards row
         cards_frame = ctk.CTkFrame(scroll, fg_color="transparent")
-        cards_frame.pack(fill="x", padx=15, pady=(0, 15))
+        cards_frame.pack(fill="x", padx=10, pady=(0, 12))
         
         stats_data = [
             ("Total Accounts", "156", "↑ 12%", self.success, "📱"),
@@ -314,41 +314,42 @@ class TelegramAutoRegApp(ctk.CTk):
         ]
         
         for i, (title, value, change, color, icon) in enumerate(stats_data):
-            card = ctk.CTkFrame(cards_frame, fg_color="#0d0d0d", corner_radius=14, height=110)
-            card.pack(side="left", fill="both", expand=True, padx=5)
+            card = ctk.CTkFrame(cards_frame, fg_color="#0d0d0d", corner_radius=12, height=100)
+            card.pack(side="left", fill="both", expand=True, padx=3)
             card.pack_propagate(False)
             
             # Icon badge
-            icon_badge = ctk.CTkFrame(card, fg_color="#1a1a1a", width=40, height=40, corner_radius=10)
-            icon_badge.place(x=15, y=15)
-            ctk.CTkLabel(icon_badge, text=icon, font=ctk.CTkFont(size=16)).place(relx=0.5, rely=0.5, anchor="center")
+            icon_badge = ctk.CTkFrame(card, fg_color="#1a1a1a", width=36, height=36, corner_radius=8)
+            icon_badge.place(x=12, y=12)
+            icon_badge.pack_propagate(False)
+            ctk.CTkLabel(icon_badge, text=icon, font=ctk.CTkFont(size=14)).place(relx=0.5, rely=0.5, anchor="center")
             
             # Value
             ctk.CTkLabel(
                 card, text=value,
-                font=ctk.CTkFont(size=26, weight="bold"), text_color=self.accent
-            ).place(x=15, y=60)
+                font=ctk.CTkFont(size=22, weight="bold"), text_color=self.accent
+            ).place(x=12, y=52)
             
             # Title
             ctk.CTkLabel(
                 card, text=title,
-                font=ctk.CTkFont(size=11), text_color=self.text_dim
-            ).place(x=15, y=90)
+                font=ctk.CTkFont(size=10), text_color=self.text_dim
+            ).place(x=12, y=78)
             
             # Change indicator
             if change:
                 ctk.CTkLabel(
                     card, text=change,
-                    font=ctk.CTkFont(size=10), text_color=color
-                ).place(relx=0.95, y=20, anchor="e")
+                    font=ctk.CTkFont(size=9), text_color=color
+                ).place(relx=0.92, y=16, anchor="e")
         
         # Activity section
         activity_frame = ctk.CTkFrame(scroll, fg_color="transparent")
-        activity_frame.pack(fill="x", padx=15, pady=10)
+        activity_frame.pack(fill="x", padx=10, pady=8)
         
         # Recent activity card
-        recent_card = ctk.CTkFrame(activity_frame, fg_color="#0d0d0d", corner_radius=14)
-        recent_card.pack(side="left", fill="both", expand=True, padx=5)
+        recent_card = ctk.CTkFrame(activity_frame, fg_color="#0d0d0d", corner_radius=12)
+        recent_card.pack(side="left", fill="both", expand=True, padx=3)
         
         ctk.CTkLabel(
             recent_card, text="Recent Activity",
@@ -376,8 +377,8 @@ class TelegramAutoRegApp(ctk.CTk):
         ctk.CTkFrame(recent_card, fg_color="transparent", height=12).pack()
         
         # System status card
-        status_card = ctk.CTkFrame(activity_frame, fg_color="#0d0d0d", corner_radius=14, width=200)
-        status_card.pack(side="right", fill="y", padx=5)
+        status_card = ctk.CTkFrame(activity_frame, fg_color="#0d0d0d", corner_radius=12, width=180)
+        status_card.pack(side="right", fill="y", padx=3)
         status_card.pack_propagate(False)
         
         ctk.CTkLabel(
@@ -406,8 +407,8 @@ class TelegramAutoRegApp(ctk.CTk):
         ctk.CTkFrame(status_card, fg_color="transparent", height=12).pack()
         
         # Quick actions
-        actions_frame = ctk.CTkFrame(scroll, fg_color="#0d0d0d", corner_radius=14)
-        actions_frame.pack(fill="x", padx=20, pady=15)
+        actions_frame = ctk.CTkFrame(scroll, fg_color="#0d0d0d", corner_radius=12)
+        actions_frame.pack(fill="x", padx=13, pady=12)
         
         ctk.CTkLabel(
             actions_frame, text="Quick Actions",
