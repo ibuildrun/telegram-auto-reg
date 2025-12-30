@@ -1,6 +1,6 @@
 """Modern GUI for Telegram Auto-Regger.
 
-Dark theme with customtkinter.
+Dark theme with custom title bar and window controls.
 """
 
 import customtkinter as ctk
@@ -14,33 +14,184 @@ ctk.set_default_color_theme("dark-blue")
 
 
 class TelegramAutoRegApp(ctk.CTk):
-    """Main application window."""
+    """Main application window with custom title bar."""
     
     def __init__(self):
         super().__init__()
         
+        # Remove default title bar
+        self.overrideredirect(True)
+        
         # Window config
-        self.title("Telegram Auto-Regger")
-        self.geometry("900x650")
+        self.geometry("900x680")
         self.minsize(800, 600)
+        
+        # Center window on screen
+        self.update_idletasks()
+        x = (self.winfo_screenwidth() - 900) // 2
+        y = (self.winfo_screenheight() - 680) // 2
+        self.geometry(f"900x680+{x}+{y}")
         
         # Colors
         self.bg_dark = "#0a0a0a"
         self.bg_card = "#141414"
+        self.bg_titlebar = "#0d0d0d"
         self.accent = "#ffffff"
         self.text_dim = "#666666"
+        self.border_color = "#1a1a1a"
         
         self.configure(fg_color=self.bg_dark)
         
+        # Window state
+        self._is_maximized = False
+        self._drag_start_x = 0
+        self._drag_start_y = 0
+        
         # Build UI
+        self._create_title_bar()
         self._create_header()
         self._create_main_content()
         self._create_footer()
         
+        # Add border effect
+        self._create_border()
+    
+    def _create_border(self):
+        """Create subtle border around window."""
+        # This creates a visual border effect
+        self.configure(highlightthickness=1, highlightbackground=self.border_color)
+    
+    def _create_title_bar(self):
+        """Create custom title bar with window controls."""
+        self.title_bar = ctk.CTkFrame(
+            self, 
+            fg_color=self.bg_titlebar, 
+            height=40,
+            corner_radius=0
+        )
+        self.title_bar.pack(fill="x", side="top")
+        self.title_bar.pack_propagate(False)
+        
+        # App icon/logo (left side)
+        icon_label = ctk.CTkLabel(
+            self.title_bar,
+            text="◆",
+            font=ctk.CTkFont(size=16),
+            text_color=self.accent,
+            width=40
+        )
+        icon_label.pack(side="left", padx=(15, 5))
+        
+        # Title text
+        title_label = ctk.CTkLabel(
+            self.title_bar,
+            text="Telegram Auto-Regger",
+            font=ctk.CTkFont(size=13, weight="bold"),
+            text_color=self.accent
+        )
+        title_label.pack(side="left", padx=5)
+        
+        # Window control buttons (right side)
+        controls_frame = ctk.CTkFrame(self.title_bar, fg_color="transparent")
+        controls_frame.pack(side="right", padx=5)
+        
+        # Minimize button
+        self.min_btn = ctk.CTkButton(
+            controls_frame,
+            text="─",
+            font=ctk.CTkFont(size=14),
+            fg_color="transparent",
+            hover_color="#2a2a2a",
+            text_color=self.text_dim,
+            width=45,
+            height=30,
+            corner_radius=5,
+            command=self._minimize_window
+        )
+        self.min_btn.pack(side="left", padx=2)
+        
+        # Maximize/Restore button
+        self.max_btn = ctk.CTkButton(
+            controls_frame,
+            text="□",
+            font=ctk.CTkFont(size=12),
+            fg_color="transparent",
+            hover_color="#2a2a2a",
+            text_color=self.text_dim,
+            width=45,
+            height=30,
+            corner_radius=5,
+            command=self._toggle_maximize
+        )
+        self.max_btn.pack(side="left", padx=2)
+        
+        # Close button
+        self.close_btn = ctk.CTkButton(
+            controls_frame,
+            text="✕",
+            font=ctk.CTkFont(size=14),
+            fg_color="transparent",
+            hover_color="#e81123",
+            text_color=self.text_dim,
+            width=45,
+            height=30,
+            corner_radius=5,
+            command=self._on_exit
+        )
+        self.close_btn.pack(side="left", padx=2)
+        
+        # Bind drag events to title bar
+        self.title_bar.bind("<Button-1>", self._start_drag)
+        self.title_bar.bind("<B1-Motion>", self._on_drag)
+        self.title_bar.bind("<Double-Button-1>", lambda e: self._toggle_maximize())
+        
+        # Also bind to title label for dragging
+        title_label.bind("<Button-1>", self._start_drag)
+        title_label.bind("<B1-Motion>", self._on_drag)
+        title_label.bind("<Double-Button-1>", lambda e: self._toggle_maximize())
+        
+        icon_label.bind("<Button-1>", self._start_drag)
+        icon_label.bind("<B1-Motion>", self._on_drag)
+    
+    def _start_drag(self, event):
+        """Start window drag."""
+        self._drag_start_x = event.x
+        self._drag_start_y = event.y
+    
+    def _on_drag(self, event):
+        """Handle window dragging."""
+        if self._is_maximized:
+            return
+        x = self.winfo_x() + event.x - self._drag_start_x
+        y = self.winfo_y() + event.y - self._drag_start_y
+        self.geometry(f"+{x}+{y}")
+    
+    def _minimize_window(self):
+        """Minimize window."""
+        self.overrideredirect(False)
+        self.iconify()
+        self.after(100, lambda: self.overrideredirect(True))
+    
+    def _toggle_maximize(self):
+        """Toggle maximize/restore."""
+        if self._is_maximized:
+            # Restore
+            self.geometry(self._restore_geometry)
+            self.max_btn.configure(text="□")
+            self._is_maximized = False
+        else:
+            # Maximize
+            self._restore_geometry = self.geometry()
+            screen_w = self.winfo_screenwidth()
+            screen_h = self.winfo_screenheight()
+            self.geometry(f"{screen_w}x{screen_h}+0+0")
+            self.max_btn.configure(text="❐")
+            self._is_maximized = True
+
     def _create_header(self):
         """Create header with logo."""
-        header = ctk.CTkFrame(self, fg_color=self.bg_dark, height=120)
-        header.pack(fill="x", padx=30, pady=(20, 10))
+        header = ctk.CTkFrame(self, fg_color=self.bg_dark, height=100)
+        header.pack(fill="x", padx=30, pady=(15, 10))
         header.pack_propagate(False)
         
         # Logo text
@@ -50,7 +201,7 @@ class TelegramAutoRegApp(ctk.CTk):
         title = ctk.CTkLabel(
             logo_frame,
             text="TELEGRAM AUTO",
-            font=ctk.CTkFont(family="Consolas", size=42, weight="bold"),
+            font=ctk.CTkFont(family="Consolas", size=38, weight="bold"),
             text_color=self.accent
         )
         title.pack()
@@ -58,18 +209,18 @@ class TelegramAutoRegApp(ctk.CTk):
         subtitle = ctk.CTkLabel(
             logo_frame,
             text="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            font=ctk.CTkFont(size=12),
-            text_color=self.text_dim
+            font=ctk.CTkFont(size=10),
+            text_color="#333333"
         )
-        subtitle.pack(pady=(5, 0))
+        subtitle.pack(pady=(3, 0))
         
         tagline = ctk.CTkLabel(
             logo_frame,
             text="Automated Registration Pipeline",
-            font=ctk.CTkFont(size=14, slant="italic"),
+            font=ctk.CTkFont(size=13, slant="italic"),
             text_color=self.text_dim
         )
-        tagline.pack(pady=(5, 0))
+        tagline.pack(pady=(3, 0))
 
     def _create_main_content(self):
         """Create main content area with menu buttons."""
@@ -77,17 +228,17 @@ class TelegramAutoRegApp(ctk.CTk):
         main.pack(fill="both", expand=True, padx=30, pady=10)
         
         # Left panel - Menu
-        menu_frame = ctk.CTkFrame(main, fg_color=self.bg_card, corner_radius=15, width=280)
+        menu_frame = ctk.CTkFrame(main, fg_color=self.bg_card, corner_radius=12, width=260)
         menu_frame.pack(side="left", fill="y", padx=(0, 15))
         menu_frame.pack_propagate(False)
         
         menu_title = ctk.CTkLabel(
             menu_frame,
-            text="═══ MENU ═══",
-            font=ctk.CTkFont(size=16, weight="bold"),
+            text="══ MENU ══",
+            font=ctk.CTkFont(size=14, weight="bold"),
             text_color=self.accent
         )
-        menu_title.pack(pady=(25, 20))
+        menu_title.pack(pady=(20, 15))
         
         # Menu buttons
         buttons_data = [
@@ -102,33 +253,33 @@ class TelegramAutoRegApp(ctk.CTk):
             btn = ctk.CTkButton(
                 menu_frame,
                 text=text,
-                font=ctk.CTkFont(size=14),
+                font=ctk.CTkFont(size=13),
                 fg_color="transparent",
                 hover_color="#1a1a1a",
                 text_color=self.accent,
                 anchor="w",
-                height=45,
+                height=42,
                 corner_radius=8,
                 command=command
             )
-            btn.pack(fill="x", padx=15, pady=5)
+            btn.pack(fill="x", padx=12, pady=4)
         
         # Exit button at bottom
         exit_btn = ctk.CTkButton(
             menu_frame,
             text="✕  Exit",
-            font=ctk.CTkFont(size=14),
+            font=ctk.CTkFont(size=13),
             fg_color="#1a1a1a",
             hover_color="#2a2a2a",
             text_color="#888888",
-            height=40,
+            height=38,
             corner_radius=8,
             command=self._on_exit
         )
-        exit_btn.pack(side="bottom", fill="x", padx=15, pady=20)
+        exit_btn.pack(side="bottom", fill="x", padx=12, pady=15)
         
         # Right panel - Content area
-        self.content_frame = ctk.CTkFrame(main, fg_color=self.bg_card, corner_radius=15)
+        self.content_frame = ctk.CTkFrame(main, fg_color=self.bg_card, corner_radius=12)
         self.content_frame.pack(side="right", fill="both", expand=True)
         
         # Show welcome screen
@@ -146,15 +297,15 @@ class TelegramAutoRegApp(ctk.CTk):
         welcome = ctk.CTkLabel(
             self.content_frame,
             text="Welcome",
-            font=ctk.CTkFont(size=28, weight="bold"),
+            font=ctk.CTkFont(size=26, weight="bold"),
             text_color=self.accent
         )
-        welcome.pack(pady=(60, 20))
+        welcome.pack(pady=(50, 15))
         
         desc = ctk.CTkLabel(
             self.content_frame,
             text="Select an option from the menu to get started.\n\nThis tool automates Telegram account registration\nusing Android emulators, SMS providers, and VPN rotation.",
-            font=ctk.CTkFont(size=14),
+            font=ctk.CTkFont(size=13),
             text_color=self.text_dim,
             justify="center"
         )
@@ -164,16 +315,16 @@ class TelegramAutoRegApp(ctk.CTk):
         start_btn = ctk.CTkButton(
             self.content_frame,
             text="Quick Start →",
-            font=ctk.CTkFont(size=16, weight="bold"),
+            font=ctk.CTkFont(size=15, weight="bold"),
             fg_color=self.accent,
             text_color=self.bg_dark,
             hover_color="#cccccc",
-            height=50,
-            width=200,
-            corner_radius=10,
+            height=45,
+            width=180,
+            corner_radius=8,
             command=self._on_start_registration
         )
-        start_btn.pack(pady=30)
+        start_btn.pack(pady=25)
 
     def _on_start_registration(self):
         """Show registration form."""
@@ -181,18 +332,18 @@ class TelegramAutoRegApp(ctk.CTk):
         
         title = ctk.CTkLabel(
             self.content_frame,
-            text="═══ NEW REGISTRATION ═══",
-            font=ctk.CTkFont(size=18, weight="bold"),
+            text="══ NEW REGISTRATION ══",
+            font=ctk.CTkFont(size=16, weight="bold"),
             text_color=self.accent
         )
-        title.pack(pady=(30, 25))
+        title.pack(pady=(25, 20))
         
         # Form frame
         form = ctk.CTkFrame(self.content_frame, fg_color="transparent")
-        form.pack(fill="x", padx=40)
+        form.pack(fill="x", padx=35)
         
         # Country
-        ctk.CTkLabel(form, text="Country", text_color=self.text_dim).pack(anchor="w")
+        ctk.CTkLabel(form, text="Country", text_color=self.text_dim, font=ctk.CTkFont(size=12)).pack(anchor="w")
         self.country_var = ctk.StringVar(value="USA")
         country_menu = ctk.CTkOptionMenu(
             form,
@@ -202,51 +353,54 @@ class TelegramAutoRegApp(ctk.CTk):
             button_color="#2a2a2a",
             button_hover_color="#3a3a3a",
             dropdown_fg_color="#1a1a1a",
-            width=300
+            width=280,
+            height=35
         )
-        country_menu.pack(anchor="w", pady=(5, 15))
+        country_menu.pack(anchor="w", pady=(5, 12))
         
         # Max price
-        ctk.CTkLabel(form, text="Max SMS Price ($)", text_color=self.text_dim).pack(anchor="w")
-        self.price_entry = ctk.CTkEntry(form, width=300, fg_color="#1a1a1a", border_color="#2a2a2a")
+        ctk.CTkLabel(form, text="Max SMS Price ($)", text_color=self.text_dim, font=ctk.CTkFont(size=12)).pack(anchor="w")
+        self.price_entry = ctk.CTkEntry(form, width=280, height=35, fg_color="#1a1a1a", border_color="#2a2a2a")
         self.price_entry.insert(0, "0.50")
-        self.price_entry.pack(anchor="w", pady=(5, 15))
+        self.price_entry.pack(anchor="w", pady=(5, 12))
         
         # Number of accounts
-        ctk.CTkLabel(form, text="Number of Accounts", text_color=self.text_dim).pack(anchor="w")
-        self.accounts_entry = ctk.CTkEntry(form, width=300, fg_color="#1a1a1a", border_color="#2a2a2a")
+        ctk.CTkLabel(form, text="Number of Accounts", text_color=self.text_dim, font=ctk.CTkFont(size=12)).pack(anchor="w")
+        self.accounts_entry = ctk.CTkEntry(form, width=280, height=35, fg_color="#1a1a1a", border_color="#2a2a2a")
         self.accounts_entry.insert(0, "1")
-        self.accounts_entry.pack(anchor="w", pady=(5, 15))
+        self.accounts_entry.pack(anchor="w", pady=(5, 12))
         
         # Checkboxes
         self.proxy_var = ctk.BooleanVar(value=False)
         proxy_cb = ctk.CTkCheckBox(
             form, text="Use Proxies", variable=self.proxy_var,
-            fg_color=self.accent, hover_color="#cccccc", text_color=self.accent
+            fg_color=self.accent, hover_color="#cccccc", text_color=self.accent,
+            font=ctk.CTkFont(size=12)
         )
-        proxy_cb.pack(anchor="w", pady=5)
+        proxy_cb.pack(anchor="w", pady=4)
         
         self.vpn_var = ctk.BooleanVar(value=True)
         vpn_cb = ctk.CTkCheckBox(
             form, text="Rotate VPN", variable=self.vpn_var,
-            fg_color=self.accent, hover_color="#cccccc", text_color=self.accent
+            fg_color=self.accent, hover_color="#cccccc", text_color=self.accent,
+            font=ctk.CTkFont(size=12)
         )
-        vpn_cb.pack(anchor="w", pady=5)
+        vpn_cb.pack(anchor="w", pady=4)
         
         # Start button
         start_btn = ctk.CTkButton(
             form,
             text="Start Registration",
-            font=ctk.CTkFont(size=15, weight="bold"),
+            font=ctk.CTkFont(size=14, weight="bold"),
             fg_color=self.accent,
             text_color=self.bg_dark,
             hover_color="#cccccc",
-            height=45,
-            width=300,
+            height=42,
+            width=280,
             corner_radius=8,
             command=self._start_registration
         )
-        start_btn.pack(anchor="w", pady=(25, 0))
+        start_btn.pack(anchor="w", pady=(20, 0))
     
     def _start_registration(self):
         """Start the registration process."""
@@ -272,15 +426,15 @@ class TelegramAutoRegApp(ctk.CTk):
         
         title = ctk.CTkLabel(
             self.content_frame,
-            text="═══ STATISTICS ═══",
-            font=ctk.CTkFont(size=18, weight="bold"),
+            text="══ STATISTICS ══",
+            font=ctk.CTkFont(size=16, weight="bold"),
             text_color=self.accent
         )
-        title.pack(pady=(30, 25))
+        title.pack(pady=(25, 20))
         
         # Stats grid
         stats_frame = ctk.CTkFrame(self.content_frame, fg_color="transparent")
-        stats_frame.pack(fill="x", padx=40)
+        stats_frame.pack(fill="x", padx=35)
         
         stats = [
             ("Total Registrations", "42"),
@@ -291,16 +445,16 @@ class TelegramAutoRegApp(ctk.CTk):
             ("Avg Cost/Account", "$0.33"),
         ]
         
-        for i, (label, value) in enumerate(stats):
-            row = ctk.CTkFrame(stats_frame, fg_color="#1a1a1a", corner_radius=8, height=50)
-            row.pack(fill="x", pady=3)
+        for label, value in stats:
+            row = ctk.CTkFrame(stats_frame, fg_color="#1a1a1a", corner_radius=6, height=45)
+            row.pack(fill="x", pady=2)
             row.pack_propagate(False)
             
-            lbl = ctk.CTkLabel(row, text=label, text_color=self.text_dim, font=ctk.CTkFont(size=14))
-            lbl.pack(side="left", padx=20)
+            lbl = ctk.CTkLabel(row, text=label, text_color=self.text_dim, font=ctk.CTkFont(size=13))
+            lbl.pack(side="left", padx=18)
             
-            val = ctk.CTkLabel(row, text=value, text_color=self.accent, font=ctk.CTkFont(size=14, weight="bold"))
-            val.pack(side="right", padx=20)
+            val = ctk.CTkLabel(row, text=value, text_color=self.accent, font=ctk.CTkFont(size=13, weight="bold"))
+            val.pack(side="right", padx=18)
     
     def _on_proxies(self):
         """Show proxy management."""
@@ -308,20 +462,20 @@ class TelegramAutoRegApp(ctk.CTk):
         
         title = ctk.CTkLabel(
             self.content_frame,
-            text="═══ PROXY MANAGEMENT ═══",
-            font=ctk.CTkFont(size=18, weight="bold"),
+            text="══ PROXY MANAGEMENT ══",
+            font=ctk.CTkFont(size=16, weight="bold"),
             text_color=self.accent
         )
-        title.pack(pady=(30, 25))
+        title.pack(pady=(25, 20))
         
         info = ctk.CTkLabel(
             self.content_frame,
             text="Proxy management coming soon...\n\nSupported formats:\n• SOCKS5\n• HTTP/HTTPS",
-            font=ctk.CTkFont(size=14),
+            font=ctk.CTkFont(size=13),
             text_color=self.text_dim,
             justify="center"
         )
-        info.pack(pady=20)
+        info.pack(pady=15)
     
     def _on_settings(self):
         """Show settings view."""
@@ -329,14 +483,14 @@ class TelegramAutoRegApp(ctk.CTk):
         
         title = ctk.CTkLabel(
             self.content_frame,
-            text="═══ SETTINGS ═══",
-            font=ctk.CTkFont(size=18, weight="bold"),
+            text="══ SETTINGS ══",
+            font=ctk.CTkFont(size=16, weight="bold"),
             text_color=self.accent
         )
-        title.pack(pady=(30, 25))
+        title.pack(pady=(25, 20))
         
         settings_frame = ctk.CTkFrame(self.content_frame, fg_color="transparent")
-        settings_frame.pack(fill="x", padx=40)
+        settings_frame.pack(fill="x", padx=35)
         
         settings = [
             ("SMS Provider", "sms-activate"),
@@ -347,23 +501,23 @@ class TelegramAutoRegApp(ctk.CTk):
         ]
         
         for label, value in settings:
-            row = ctk.CTkFrame(settings_frame, fg_color="#1a1a1a", corner_radius=8, height=45)
-            row.pack(fill="x", pady=3)
+            row = ctk.CTkFrame(settings_frame, fg_color="#1a1a1a", corner_radius=6, height=42)
+            row.pack(fill="x", pady=2)
             row.pack_propagate(False)
             
-            lbl = ctk.CTkLabel(row, text=label, text_color=self.text_dim)
-            lbl.pack(side="left", padx=20)
+            lbl = ctk.CTkLabel(row, text=label, text_color=self.text_dim, font=ctk.CTkFont(size=12))
+            lbl.pack(side="left", padx=18)
             
-            val = ctk.CTkLabel(row, text=value, text_color=self.accent)
-            val.pack(side="right", padx=20)
+            val = ctk.CTkLabel(row, text=value, text_color=self.accent, font=ctk.CTkFont(size=12))
+            val.pack(side="right", padx=18)
         
         note = ctk.CTkLabel(
             self.content_frame,
             text="Edit config.yaml to change settings",
-            font=ctk.CTkFont(size=12, slant="italic"),
+            font=ctk.CTkFont(size=11, slant="italic"),
             text_color=self.text_dim
         )
-        note.pack(pady=20)
+        note.pack(pady=15)
     
     def _on_check_config(self):
         """Check configuration."""
@@ -371,11 +525,11 @@ class TelegramAutoRegApp(ctk.CTk):
         
         title = ctk.CTkLabel(
             self.content_frame,
-            text="═══ CONFIG CHECK ═══",
-            font=ctk.CTkFont(size=18, weight="bold"),
+            text="══ CONFIG CHECK ══",
+            font=ctk.CTkFont(size=16, weight="bold"),
             text_color=self.accent
         )
-        title.pack(pady=(30, 25))
+        title.pack(pady=(25, 20))
         
         checks = [
             ("config.yaml found", True),
@@ -386,26 +540,26 @@ class TelegramAutoRegApp(ctk.CTk):
         
         for label, ok in checks:
             row = ctk.CTkFrame(self.content_frame, fg_color="transparent")
-            row.pack(anchor="w", padx=60, pady=5)
+            row.pack(anchor="w", padx=50, pady=4)
             
             icon = "●" if ok else "○"
             color = "#00ff00" if ok else "#ff4444"
             
-            ctk.CTkLabel(row, text=icon, text_color=color, font=ctk.CTkFont(size=16)).pack(side="left")
-            ctk.CTkLabel(row, text=f"  {label}", text_color=self.accent).pack(side="left")
+            ctk.CTkLabel(row, text=icon, text_color=color, font=ctk.CTkFont(size=14)).pack(side="left")
+            ctk.CTkLabel(row, text=f"  {label}", text_color=self.accent, font=ctk.CTkFont(size=13)).pack(side="left")
 
     def _create_footer(self):
         """Create footer with credits."""
-        footer = ctk.CTkFrame(self, fg_color="transparent", height=50)
-        footer.pack(fill="x", padx=30, pady=(10, 20))
+        footer = ctk.CTkFrame(self, fg_color="transparent", height=45)
+        footer.pack(fill="x", padx=30, pady=(8, 15))
         footer.pack_propagate(False)
         
         # Separator
         sep = ctk.CTkLabel(
             footer,
             text="━" * 100,
-            font=ctk.CTkFont(size=10),
-            text_color="#333333"
+            font=ctk.CTkFont(size=8),
+            text_color="#222222"
         )
         sep.pack()
         
@@ -416,7 +570,7 @@ class TelegramAutoRegApp(ctk.CTk):
         made_with = ctk.CTkLabel(
             credits_frame,
             text="Made with ♥ by ",
-            font=ctk.CTkFont(size=12),
+            font=ctk.CTkFont(size=11),
             text_color=self.text_dim
         )
         made_with.pack(side="left")
@@ -424,12 +578,12 @@ class TelegramAutoRegApp(ctk.CTk):
         author_btn = ctk.CTkButton(
             credits_frame,
             text="@ibuildrun",
-            font=ctk.CTkFont(size=12, weight="bold"),
+            font=ctk.CTkFont(size=11, weight="bold"),
             fg_color="transparent",
             hover_color="#1a1a1a",
             text_color=self.accent,
-            width=80,
-            height=25,
+            width=75,
+            height=22,
             command=lambda: webbrowser.open("https://github.com/ibuildrun")
         )
         author_btn.pack(side="left")
@@ -437,7 +591,7 @@ class TelegramAutoRegApp(ctk.CTk):
         sep_label = ctk.CTkLabel(
             credits_frame,
             text="  │  ",
-            font=ctk.CTkFont(size=12),
+            font=ctk.CTkFont(size=11),
             text_color="#333333"
         )
         sep_label.pack(side="left")
@@ -445,20 +599,19 @@ class TelegramAutoRegApp(ctk.CTk):
         github_btn = ctk.CTkButton(
             credits_frame,
             text="GitHub",
-            font=ctk.CTkFont(size=12),
+            font=ctk.CTkFont(size=11),
             fg_color="transparent",
             hover_color="#1a1a1a",
             text_color=self.text_dim,
-            width=60,
-            height=25,
+            width=55,
+            height=22,
             command=lambda: webbrowser.open("https://github.com/ibuildrun/telegram-auto-reg")
         )
         github_btn.pack(side="left")
     
     def _on_exit(self):
         """Exit application."""
-        if messagebox.askyesno("Exit", "Exit application?"):
-            self.quit()
+        self.quit()
 
 
 def main():
