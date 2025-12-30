@@ -1,386 +1,405 @@
-# Telegram Auto-Regger (Automation Showcase)
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Platform-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows">
+  <img src="https://img.shields.io/badge/Appium-2.0-662D91?style=for-the-badge&logo=appium&logoColor=white" alt="Appium">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
+</p>
 
-> End-to-end automation pipeline that orchestrates Android emulators / devices, Appium, ADB, SMS providers, a custom email service, VPN, and Telethon to register and warm up Telegram accounts.
+<h1 align="center">
+  <br>
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/telegram/telegram-original.svg" alt="Telegram" width="80">
+  <br>
+  Telegram Auto-Regger
+  <br>
+</h1>
 
-> 🧩 **Important note**  
-> This project is a **technical portfolio piece**. It is intended for educational purposes and for demonstrating automation skills (Python, Telethon, Appium, UI automation, ADB, external APIs).  
-> You are solely responsible for respecting Telegram’s Terms of Service, the SMS provider’s rules, and local laws. Do **not** use this project for spam, abuse, or any form of malicious activity.
+<h4 align="center">🚀 End-to-end automation pipeline for Telegram account registration</h4>
 
----
+<p align="center">
+  <a href="#-features">Features</a> •
+  <a href="#-architecture">Architecture</a> •
+  <a href="#-quick-start">Quick Start</a> •
+  <a href="#-configuration">Configuration</a> •
+  <a href="#-usage">Usage</a> •
+  <a href="#-roadmap">Roadmap</a>
+</p>
 
-## Table of contents
-
-- [Overview](#overview)
-- [Core features](#core-features)
-- [Architecture](#architecture)
-  - [High-level flow](#high-level-flow)
-  - [Modules](#modules)
-- [Project structure](#project-structure)
-- [Installation](#installation)
-  - [Python dependencies](#python-dependencies)
-  - [Additional GitHub dependencies](#additional-github-dependencies)
-- [Configuration](#configuration)
-  - [`config.yaml`](#configyaml)
-- [Usage](#usage)
-- [Notes & limitations](#notes--limitations)
-- [Roadmap / ideas](#roadmap--ideas)
-- [License](#license)
-
----
-
-## Overview
-
-This repository implements a **full automation pipeline** for Telegram registration:
-
-- Controls **Android emulators or physical devices** via ADB + Appium.
-- Uses a **third-party SMS provider** (e.g. sms-activate / GrizzlySMS) to rent numbers and fetch SMS codes.
-- Optionally registers a mailbox on **Onion Mail** (through Windows UI automation) when Telegram requires an email step.
-- Uses **ExpressVPN** GUI automation to rotate IPs or switch locations.
-- Builds both **Telethon sessions** and **Telegram Desktop TData** for each registered account.
-
-The main script is `telegram_regger.py`. It ties together all subsystems and can serve as a real-world example of complex automation/orchestration in Python.
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/placeholder/demo.gif" alt="Demo" width="700">
+</p>
 
 ---
 
-## Core features
-
-- ✅ Automation of Telegram registration flow (number → SMS → login)
-- ✅ Android device / emulator control via **ADB** and **Appium**
-- ✅ Windows UI automation:
-  - Onion Mail (Chrome) – register/login mailbox, fetch email codes
-  - ExpressVPN – reconnect or change country
-  - Telegram Desktop – input phone number and login code
-- ✅ SMS provider integration via **smsactivate** compatible API
-- ✅ Session & credentials management:
-  - Telethon `.session` files
-  - Telegram Desktop `tdata` folders
-  - Optional conversion between TData / auth keys / Telethon sessions
-- ✅ Device “fingerprint” randomisation (IMEI, Android ID, user-agent, timezone, etc.)
-- ✅ Simple local stats tracking via JSON (success/fail reasons, costs, etc.)
+> [!IMPORTANT]
+> This project is a **technical portfolio piece** for educational purposes and demonstrating automation skills.
+> You are solely responsible for respecting Telegram's Terms of Service and local laws.
 
 ---
 
-## Architecture
+## ✨ Features
 
-### High-level flow
+<table>
+<tr>
+<td width="50%">
 
-For each account, the pipeline roughly looks like this:
+### 📱 Android Automation
+- Full Telegram UI automation via **Appium**
+- Device fingerprint randomization (IMEI, Android ID, MAC)
+- Support for emulators (LDPlayer) and physical devices
+- ADB-based device management
 
-1. **Prepare device**
-   - Connect to Android device/emulator via ADB.
-   - Reset Telegram data and various device identifiers (`auto_reger.adb.reset_data`).
-   - Optionally change VPN location or reconnect.
+</td>
+<td width="50%">
 
-2. **Buy number & send to Telegram**
-   - Use `SmsApi` (smsactivate-compatible) to rent a phone number.
-   - Validate country code, send the number to Telegram on the Android device via Appium (`Telegram.input_phone_number`).
+### 🖥️ Windows Automation
+- **ExpressVPN** control for IP rotation
+- **Onion Mail** registration via Chrome
+- **Telegram Desktop** TData extraction
+- pywinauto-based UI automation
 
-3. **Email (optional)**
-   - If Telegram demands an email, automate Onion Mail in Chrome:
-     - Register mailbox.
-     - Login and wait for confirmation mail.
-   - Provide email back to Telegram if required by flow.
+</td>
+</tr>
+<tr>
+<td width="50%">
 
-4. **Receive SMS and complete registration**
-   - Poll SMS provider for the verification code (`SmsApi.check_verif_status`).
-   - Enter SMS code in Telegram (Android UI).
-   - Handle possible 2FA (two-step verification) UI screens.
+### 📨 SMS Integration
+- **SMS-Activate** API support
+- **GrizzlySMS** API support
+- Automatic code extraction
+- Cost tracking and statistics
 
-5. **Create sessions / TData**
-   - Launch Telegram Desktop on Windows with a clean profile.
-   - Input phone number, read SMS from Android Telegram if needed, log in.
-   - Save resulting TData folder (`auto_reger.tdesktop`, `auto_reger.sessions`).
-   - Build Telethon `.session` file for programmatic access.
+</td>
+<td width="50%">
 
-6. **Store metadata**
-   - Persist account info (phone number, device info, SMS cost, session paths) into JSON under `sessions/converted/…`.
+### 💾 Session Management
+- Telethon `.session` files
+- Telegram Desktop `tdata` folders
+- Session conversion utilities
+- Metadata persistence (JSON)
 
-All of this is orchestrated from `telegram_regger.py`.
-
----
-
-### Modules
-
-**Key modules inside `auto_reger/`:**
-
-- `adb.py`  
-  Low-level helpers for ADB:
-  - Connect to device (`connect_adb`)
-  - Query device info (model, Android version, Telegram version)
-  - Randomise identifiers (Android ID, IMEI, MAC, timezone, etc.)
-  - `reset_data(...)` – high-level reset of Telegram and related settings.
-
-- `emulator.py`  
-  Appium-based Android automation:
-  - `Emulator` – base class (emulator/device, Appium service, WebDriver)
-  - `Telegram` – Telegram Android UI automation (enter phone number, read SMS, navigate settings, set avatar, etc.)
-  - `Instagram` (optional) – similar pattern for Instagram Lite.
-
-- `windows_automation.py`  
-  Windows desktop automation via pywinauto + pyautogui:
-  - `App` – base class (start/attach to app, close, kill background processes)
-  - `Onion` – work with Onion Mail in Chrome (register, login, extract codes)
-  - `VPN` – control ExpressVPN (reconnect, change location)
-  - `TelegramDesktop` – drive Telegram Desktop login (enter phone, code).
-
-- `sms_api.py`  
-  Wrapper around `smsactivate.api.SMSActivateAPI`:
-  - Supports sms-activate / GrizzlySMS handler API.
-  - Country resolution, price checks, renting numbers (`verification_number`).
-  - Polling for codes (`check_verif_status`).
-  - Local tracking of activations in `activations.json`.
-
-- `tdesktop.py`  
-  Tools around **Telegram Desktop TData**:
-  - Decrypt and parse TData via `tdesktop_decrypter`.
-  - Extract `auth_key`, `dc_id`, `user_id` for accounts.
-  - Batch process a folder of accounts and generate a JSON summary.
-
-- `sessions.py`  
-  Session management & converters:
-  - Convert TData ↔ Telethon sessions.
-  - Work with raw `auth_key` + `dc_id` to define Telethon clients.
-  - Android `tgnet.dat` + `userconfig.xml` → Telethon session or TData.
-  - Helper `set_2fa_safe(...)` to set/reset cloud password via Telethon.
-
-- `utils.py`  
-  Shared utilities:
-  - `PROJECT_ROOT`, `load_config()`, `CONFIG`
-  - JSON read/write, reading text lists, name lists
-  - Device config loader (`get_device_config`)
-  - Emulator process kill helper (`kill_emulator`)
-  - Random string generation, avatar download, etc.
-
-**Top-level script:**
-
-- `telegram_regger.py`  
-  The main orchestration script:
-  - CLI inputs (country, max price, number of accounts).
-  - Loads `config.yaml`.
-  - Picks device config (emulator / physical).
-  - Repeatedly calls `register_telegram_account(...)`.
+</td>
+</tr>
+</table>
 
 ---
 
-## Project structure
+## 🏗️ Architecture
 
-Example repository layout:
-
-```text
-Telegrm-Auto-Regger/
-├─ auto_reger/
-│  ├─ __init__.py
-│  ├─ adb.py
-│  ├─ emulator.py
-│  ├─ sessions.py
-│  ├─ sms_api.py
-│  ├─ tdesktop.py
-│  ├─ utils.py
-│  └─ windows_automation.py
-├─ sessions/
-│  ├─ converted/
-│  ├─ tg_desk/
-│  └─ telethon/
-├─ telegram_regger.py
-├─ requirements.txt
-├─ config.yaml              # not committed; use config.yaml.example instead
-├─ config.yaml.example      # template config for users
-├─ activations.json         # created at runtime
-├─ cech.json                # simple stats storage
-└─ README.md
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        📱 DEVICE LAYER                               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                  │
+│  │  LDPlayer   │  │  Physical   │  │    ADB      │                  │
+│  │  Emulator   │  │   Device    │  │  Commands   │                  │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘                  │
+└─────────┼────────────────┼────────────────┼─────────────────────────┘
+          │                │                │
+          ▼                ▼                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      🤖 AUTOMATION LAYER                             │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐     │
+│  │     Appium      │  │    pywinauto    │  │    Telethon     │     │
+│  │  (Android UI)   │  │  (Windows UI)   │  │  (Telegram API) │     │
+│  └────────┬────────┘  └────────┬────────┘  └────────┬────────┘     │
+└───────────┼────────────────────┼────────────────────┼───────────────┘
+            │                    │                    │
+            ▼                    ▼                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      🔧 SERVICE LAYER                                │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐            │
+│  │ SMS API  │  │  Onion   │  │   VPN    │  │ TDesktop │            │
+│  │ Provider │  │   Mail   │  │ Control  │  │  Export  │            │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘            │
+└───────┼─────────────┼─────────────┼─────────────┼───────────────────┘
+        │             │             │             │
+        ▼             ▼             ▼             ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    📊 ORCHESTRATION LAYER                            │
+│                                                                      │
+│                    ┌─────────────────────┐                          │
+│                    │  telegram_regger.py │                          │
+│                    │    (Main Script)    │                          │
+│                    └─────────────────────┘                          │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Installation
+## 🚀 Quick Start
 
-### Python dependencies
+### Prerequisites
 
-Requirements:
+- **Python 3.10+**
+- **Windows 10/11**
+- **ADB** (Android Debug Bridge)
+- **Appium Server**
+- Android emulator (LDPlayer recommended) or physical device
 
-- Python **3.10+**
-- Windows 10/11 (for desktop automation)
-- ADB installed and available (or path configured in `config.yaml`)
-- Android emulator or physical device with USB debugging enabled
-
-Create a virtual environment and install Python deps:
+### Installation
 
 ```bash
-git clone https://github.com/ltrix07/Telegrm-Auto-Regger.git
-cd Telegrm-Auto-Regger
+# Clone the repository
+git clone https://github.com/ibuildrun/telegram-auto-reg.git
+cd telegram-auto-reg
 
+# Create virtual environment
 python -m venv .venv
-.venv\Scripts\activate  # on Windows
+.venv\Scripts\activate
 
-pip install --upgrade pip
+# Install dependencies
 pip install -r requirements.txt
+
+# Install GitHub dependencies
+pip install git+https://github.com/ntqbit/tdesktop-decrypter.git
 ```
 
-Typical `requirements.txt` (simplified):
-
-```text
-telethon
-requests
-PyYAML
-psutil
-pyautogui
-pywinauto
-pywin32
-Pillow
-pytesseract
-Appium-Python-Client
-selenium
-schedule
-cryptography
-smsactivate
-```
-
-### Additional GitHub dependencies
-
-Some modules used in this project are **not** on PyPI and should be installed from GitHub (or included as submodules):
-
-- `tdesktop_decrypter` – Telegram Desktop TData decrypter  
-- `AndroidTelePorter` – Android Telegram session converter  
-- `TGConvertor` – TData → Telethon converter
-
-Example (adapt to your actual repos/URLs):
+### Verify Setup
 
 ```bash
-pip install git+https://github.com/ntqbit/tdesktop-decrypter.git
-# pip install git+https://github.com/<user>/AndroidTelePorter.git
-# pip install git+https://github.com/<user>/TGConvertor.git
-```
+# Check ADB connection
+adb devices
 
-If you plan to *only* use parts of the project (e.g. just Android automation + SMS), you can omit some of these extras.
+# Should show your device/emulator
+# List of devices attached
+# 127.0.0.1:5555    device
+```
 
 ---
 
-## Configuration
+## ⚙️ Configuration
 
-### `config.yaml`
+Create `config.yaml` from the example:
 
-The project reads configuration from `config.yaml` located in the repository root.
+```bash
+cp config.yaml.example config.yaml
+```
 
-Minimal example:
+### Minimal Configuration
 
 ```yaml
+# config.yaml
 adb:
-  # E = emulator, P = physical device
-  device_type: "E"
-  device_udid: "127.0.0.1:5555"   # from `adb devices`
+  device_type: "E"              # E = emulator, P = physical
+  device_udid: "127.0.0.1:5555" # from `adb devices`
   appium_port: 4723
-  adb_path: "C:\Android\platform-tools\adb.exe"
 
 sms_api:
-  # "sms-activate" or "grizzly-sms"
   service_name: "sms-activate"
-  # file with API key (single line)
   api_key_path: "sms_activate_api.txt"
 
 profiles:
-  # text files with one name per line (optional)
+  first_names_file: "data/first_names.txt"
+  last_names_file: "data/last_names.txt"
+```
+
+<details>
+<summary>📋 Full Configuration Reference</summary>
+
+```yaml
+# ADB & Device Settings
+adb:
+  device_type: "E"                    # E = emulator, P = physical device
+  device_udid: "127.0.0.1:5555"       # Device ID from `adb devices`
+  appium_port: 4723                   # Appium server port
+  adb_path: "C:\\Android\\platform-tools\\adb.exe"
+
+# SMS Provider
+sms_api:
+  service_name: "sms-activate"        # or "grizzly-sms"
+  api_key_path: "sms_activate_api.txt"
+
+# Profile Generation
+profiles:
   first_names_file: "data/first_names.txt"
   last_names_file: "data/last_names.txt"
 
-server:
-  # optional: remote server for syncing sessions via scp/docker
-  user: "user"
-  host: "example.com"
-  temp_path: "/tmp/telegram-sessions"
-  docker_image: "my/docker-image:latest"
-
+# Telethon API (get from my.telegram.org)
 telethon:
   api_id: 123456
-  api_hash: "YOUR_API_HASH"
-  telegram_device_model: "Android"
-  telegram_system_version: "9"
-  telegram_app_version: "10.0"
+  api_hash: "your_api_hash_here"
+  device_model: "Desktop"
+  system_version: "Windows 10"
+  app_version: "4.0.4 x64"
+
+# Remote Server (optional)
+server:
+  user: "deploy"
+  host: "server.example.com"
+  temp_path: "/tmp/accounts"
+  docker_image: "account-processor:latest"
 ```
 
-You can commit a `config.yaml.example` file to the repo and keep your real `config.yaml` out of version control.
+</details>
 
 ---
 
-## Usage
+## 📖 Usage
 
-> ⚠️ **Warning**  
-> Running the script will contact real external services:
-> - SMS provider (credits will be spent),
-> - Telegram servers,
-> - optionally a VPN service and email provider.  
-> Use on test accounts and at your own risk. Always respect the terms of the services you use.
+### Start Registration
 
-1. Make sure:
+```bash
+python telegram_regger.py
+```
 
-   - `config.yaml` is properly filled.
-   - ADB sees your device/emulator:
-     ```bash
-     adb devices
-     ```
-   - Appium Server is available (or the `Emulator` class starts it automatically on the configured port).
+You'll be prompted for:
+- **Country** — `USA`, `United Kingdom`, etc.
+- **Max price** — Maximum SMS cost
+- **Number of accounts** — How many to register
 
-2. Run the main script:
+### Registration Flow
 
-   ```bash
-   .venv\Scripts\activate
-   python telegram_regger.py
-   ```
+```
+1. 📱 Prepare Device
+   └─ Reset Telegram data
+   └─ Randomize device fingerprint
+   └─ Connect VPN
 
-3. Follow the CLI prompts:
+2. 📞 Get Phone Number
+   └─ Rent from SMS provider
+   └─ Validate country code
+   └─ Send to Telegram app
 
-   - **Country** for registration (`USA`, `United Kingdom`, …).
-   - **Maximum price** per number.
-   - **Number of accounts** to register.
+3. 📧 Email Verification (if required)
+   └─ Register Onion Mail
+   └─ Wait for confirmation
 
-4. The script will:
+4. ✅ Complete Registration
+   └─ Receive SMS code
+   └─ Enter in Telegram
+   └─ Handle 2FA if needed
 
-   - Prepare device / emulator.
-   - Rotate VPN if configured.
-   - Rent a number, send it to Telegram.
-   - Handle email step via Onion Mail (when required).
-   - Wait for SMS and complete registration.
-   - Create Telethon session and/or TData.
-   - Save all metadata into `sessions/…` and `cech.json`.
+5. 💾 Export Sessions
+   └─ Create Telethon session
+   └─ Extract TData folder
+   └─ Save metadata
+```
 
-If something goes wrong, check:
+### Output Structure
 
-- `telegram_regger.log` – detailed runtime logs.
-- `cech.json` – simple aggregated stats.
-- `activations.json` – currently tracked SMS activations.
-
----
-
-## Notes & limitations
-
-- The code is tightly coupled to **Windows UI** (Telegram Desktop, ExpressVPN, Chrome) and coordinates / titles in a specific language (often Russian). For a different OS or locale you’ll need to adjust locators and selectors.
-- Device “fingerprint” logic uses ADB + root commands. It assumes:
-  - Rooted emulator/device,
-  - Correct ADB path,
-  - Proper permissions.
-- SMS provider integration assumes **sms-activate handler API** compatibility.
-- Some parts (e.g. TData decryption, Android `tgnet.dat` conversion) rely on external libraries that must be installed separately from GitHub.
-- This project is not a polished library yet; it’s a **working automation lab**. The code is intentionally kept verbose and explicit to show how the pieces fit together.
+```
+sessions/
+├── converted/
+│   └── 2025-01-15/
+│       └── +79001234567.json    # Account metadata
+├── tg_desk/
+│   └── +79001234567/
+│       └── tdata/               # Telegram Desktop data
+└── telethon/
+    └── +79001234567/
+        └── +79001234567.session # Telethon session
+```
 
 ---
 
-## Roadmap / ideas
+## 📁 Project Structure
 
-Potential future improvements:
-
-- [ ] Refactor `telegram_regger.py` into smaller CLI commands (`scripts/`):
-  - `register_account.py`
-  - `convert_sessions.py`
-  - `collect_stats.py`
-- [ ] Add Dockerfile for server-side processing and CI examples.
-- [ ] Add tests (unit/integration) for individual modules (`auto_reger/…`).
-- [ ] Add a “dry-run” mode (no real SMS/VPN/email calls).
-- [ ] Make Windows automation more robust by relying less on coordinates and more on accessibility names.
+```
+telegram-auto-reg/
+├── 📂 auto_reger/              # Core automation modules
+│   ├── 📂 emulator/            # Appium automation
+│   │   ├── base.py             # Emulator base class
+│   │   ├── telegram.py         # Telegram UI automation
+│   │   └── instagram.py        # Instagram automation
+│   ├── 📂 windows/             # Windows automation
+│   │   ├── base.py             # App base class
+│   │   ├── onion.py            # Onion Mail
+│   │   ├── vpn.py              # ExpressVPN
+│   │   └── telegram_desktop.py # Telegram Desktop
+│   ├── adb.py                  # ADB commands
+│   ├── sms_api.py              # SMS provider wrapper
+│   ├── sessions.py             # Session converters
+│   ├── tdesktop.py             # TData tools
+│   └── utils.py                # Utilities
+├── 📂 tests/                   # Test suite
+├── telegram_regger.py          # Main script
+├── config.yaml.example         # Config template
+├── requirements.txt            # Dependencies
+└── README.md
+```
 
 ---
 
-If you’re reading this on GitHub and want to dive deeper, start from:
+## 🗺️ Roadmap
 
-- `auto_reger/emulator.py` (Android + Telegram automation)
-- `auto_reger/windows_automation.py` (Onion Mail / VPN / Telegram Desktop)
-- `auto_reger/sessions.py` (TData / Telethon session logic)
-- `telegram_regger.py` (orchestration script)
+<table>
+<tr>
+<td>
+
+### ✅ Completed
+- [x] Android automation (Appium)
+- [x] Windows automation (pywinauto)
+- [x] SMS provider integration
+- [x] Session management
+- [x] Device fingerprinting
+- [x] Modular architecture
+
+</td>
+<td>
+
+### 🚧 In Progress
+- [ ] TUI interface (Textual)
+- [ ] SOCKS5 proxy support
+- [ ] FirstMail integration
+- [ ] SMS provider plugins
+- [ ] Config validation
+
+</td>
+<td>
+
+### 📋 Planned
+- [ ] Docker support
+- [ ] Multi-threading
+- [ ] Statistics dashboard
+- [ ] API server mode
+- [ ] Dry-run mode
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🛠️ Tech Stack
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Appium-662D91?style=flat-square&logo=appium&logoColor=white" alt="Appium">
+  <img src="https://img.shields.io/badge/Selenium-43B02A?style=flat-square&logo=selenium&logoColor=white" alt="Selenium">
+  <img src="https://img.shields.io/badge/ADB-3DDC84?style=flat-square&logo=android&logoColor=white" alt="ADB">
+</p>
+
+| Category | Technologies |
+|----------|-------------|
+| **Telegram API** | Telethon |
+| **Android** | Appium, Selenium, ADB |
+| **Windows** | pywinauto, pyautogui, pywin32 |
+| **SMS** | smsactivate API |
+| **Config** | PyYAML |
+| **Image/OCR** | Pillow, pytesseract |
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  <sub>
+    Made with ❤️ by <a href="https://github.com/ibuildrun"><b>@ibuildrun</b></a>
+  </sub>
+</p>
+
+<p align="center">
+  <sub>
+    ⭐ Star this repo if you find it useful!
+  </sub>
+</p>
+
+<p align="center">
+  <a href="https://github.com/ibuildrun/telegram-auto-reg/issues">Report Bug</a>
+  •
+  <a href="https://github.com/ibuildrun/telegram-auto-reg/issues">Request Feature</a>
+</p>
