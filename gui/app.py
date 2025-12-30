@@ -220,6 +220,7 @@ class TelegramAutoRegApp(ctk.CTk):
             ("🌐", "Proxies", self._on_proxies),
             ("⚙", "Settings", self._on_settings),
             ("✓", "Config Check", self._on_check_config),
+            ("❓", "Help", self._on_help),
         ]
         
         for icon, text, cmd in menu_items:
@@ -1047,6 +1048,188 @@ class TelegramAutoRegApp(ctk.CTk):
                 fg_color="#141414", hover_color="#1a1a1a", text_color=self.accent,
                 height=35, corner_radius=8
             ).pack(side="left", padx=5, expand=True, fill="x")
+
+    def _on_help(self):
+        """Show help and instructions in Russian and English."""
+        self._clear_content()
+        
+        scroll = ctk.CTkScrollableFrame(self.content_frame, fg_color="transparent")
+        scroll.pack(fill="both", expand=True, padx=5, pady=5)
+        
+        # Header
+        ctk.CTkLabel(
+            scroll, text="Help / Помощь",
+            font=ctk.CTkFont(size=24, weight="bold"), text_color=self.accent
+        ).pack(anchor="w", padx=20, pady=(15, 20))
+        
+        # Language tabs
+        self.help_lang = ctk.StringVar(value="ru")
+        lang_frame = ctk.CTkFrame(scroll, fg_color="transparent")
+        lang_frame.pack(fill="x", padx=20, pady=(0, 15))
+        
+        ctk.CTkButton(
+            lang_frame, text="🇷🇺 Русский", font=ctk.CTkFont(size=12),
+            fg_color=self.accent, text_color=self.bg_dark, hover_color="#cccccc",
+            height=35, width=120, corner_radius=8,
+            command=lambda: self._show_help_content(scroll, "ru")
+        ).pack(side="left", padx=(0, 10))
+        
+        ctk.CTkButton(
+            lang_frame, text="🇬🇧 English", font=ctk.CTkFont(size=12),
+            fg_color="#1a1a1a", text_color=self.accent, hover_color="#2a2a2a",
+            height=35, width=120, corner_radius=8,
+            command=lambda: self._show_help_content(scroll, "en")
+        ).pack(side="left")
+        
+        # Content container
+        self.help_content_frame = ctk.CTkFrame(scroll, fg_color="transparent")
+        self.help_content_frame.pack(fill="both", expand=True, padx=0, pady=0)
+        
+        # Show Russian by default
+        self._show_help_content(scroll, "ru")
+    
+    def _show_help_content(self, parent, lang):
+        """Show help content in selected language."""
+        # Clear previous content
+        for widget in self.help_content_frame.winfo_children():
+            widget.destroy()
+        
+        if lang == "ru":
+            self._show_help_ru()
+        else:
+            self._show_help_en()
+    
+    def _show_help_ru(self):
+        """Show Russian help content."""
+        sections = [
+            ("🚀 Быстрый старт", [
+                "1. Скопируйте config.yaml.example в config.yaml",
+                "2. Заполните API ключи (Telegram API, SMS провайдер)",
+                "3. Настройте ADB подключение к эмулятору/устройству",
+                "4. Запустите приложение и перейдите в Registration",
+            ]),
+            ("⚙️ Настройка конфигурации", [
+                "• Settings → SMS API: укажите провайдера и API ключ",
+                "• Settings → Telegram API: получите на my.telegram.org",
+                "• Settings → ADB: укажите UDID устройства (adb devices)",
+                "• Settings → VPN: включите для ротации IP",
+            ]),
+            ("📱 Регистрация аккаунтов", [
+                "1. Перейдите в раздел Registration",
+                "2. Выберите страну для номера телефона",
+                "3. Укажите максимальную цену за SMS",
+                "4. Выберите количество аккаунтов",
+                "5. Нажмите Start Registration",
+            ]),
+            ("🔧 Требования к системе", [
+                "• Windows 10/11 (для автоматизации десктопа)",
+                "• Python 3.10+",
+                "• Android эмулятор (LDPlayer) или устройство с root",
+                "• ADB установлен и доступен",
+                "• Appium Server (запускается автоматически)",
+            ]),
+            ("📊 Статистика", [
+                "• Dashboard: общая статистика и последняя активность",
+                "• Statistics: детальная разбивка по странам",
+                "• Все данные сохраняются в cech.json",
+            ]),
+            ("🌐 Прокси", [
+                "• Поддерживаются SOCKS5, HTTP, HTTPS прокси",
+                "• Формат: ip:port или ip:port:user:pass",
+                "• Импортируйте список в разделе Proxies",
+                "• Прокси привязываются к аккаунтам автоматически",
+            ]),
+            ("❓ Решение проблем", [
+                "• Config Check: проверьте статус всех компонентов",
+                "• Логи: telegram_regger.log в корне проекта",
+                "• ADB не видит устройство: проверьте USB debugging",
+                "• SMS не приходит: попробуйте другую страну/провайдера",
+            ]),
+        ]
+        
+        for title, items in sections:
+            card = ctk.CTkFrame(self.help_content_frame, fg_color="#0d0d0d", corner_radius=12)
+            card.pack(fill="x", padx=20, pady=6)
+            
+            ctk.CTkLabel(
+                card, text=title,
+                font=ctk.CTkFont(size=14, weight="bold"), text_color=self.accent
+            ).pack(anchor="w", padx=18, pady=(12, 8))
+            
+            for item in items:
+                ctk.CTkLabel(
+                    card, text=item,
+                    font=ctk.CTkFont(size=12), text_color=self.accent_dim,
+                    anchor="w", justify="left"
+                ).pack(anchor="w", padx=18, pady=2)
+            
+            ctk.CTkFrame(card, fg_color="transparent", height=10).pack()
+    
+    def _show_help_en(self):
+        """Show English help content."""
+        sections = [
+            ("🚀 Quick Start", [
+                "1. Copy config.yaml.example to config.yaml",
+                "2. Fill in API keys (Telegram API, SMS provider)",
+                "3. Configure ADB connection to emulator/device",
+                "4. Launch the app and go to Registration",
+            ]),
+            ("⚙️ Configuration Setup", [
+                "• Settings → SMS API: set provider and API key",
+                "• Settings → Telegram API: get from my.telegram.org",
+                "• Settings → ADB: set device UDID (adb devices)",
+                "• Settings → VPN: enable for IP rotation",
+            ]),
+            ("📱 Account Registration", [
+                "1. Go to Registration section",
+                "2. Select country for phone number",
+                "3. Set maximum SMS price",
+                "4. Choose number of accounts",
+                "5. Click Start Registration",
+            ]),
+            ("🔧 System Requirements", [
+                "• Windows 10/11 (for desktop automation)",
+                "• Python 3.10+",
+                "• Android emulator (LDPlayer) or rooted device",
+                "• ADB installed and accessible",
+                "• Appium Server (starts automatically)",
+            ]),
+            ("📊 Statistics", [
+                "• Dashboard: overall stats and recent activity",
+                "• Statistics: detailed breakdown by country",
+                "• All data is saved to cech.json",
+            ]),
+            ("🌐 Proxies", [
+                "• Supports SOCKS5, HTTP, HTTPS proxies",
+                "• Format: ip:port or ip:port:user:pass",
+                "• Import list in Proxies section",
+                "• Proxies are bound to accounts automatically",
+            ]),
+            ("❓ Troubleshooting", [
+                "• Config Check: verify all component status",
+                "• Logs: telegram_regger.log in project root",
+                "• ADB not seeing device: check USB debugging",
+                "• SMS not arriving: try different country/provider",
+            ]),
+        ]
+        
+        for title, items in sections:
+            card = ctk.CTkFrame(self.help_content_frame, fg_color="#0d0d0d", corner_radius=12)
+            card.pack(fill="x", padx=20, pady=6)
+            
+            ctk.CTkLabel(
+                card, text=title,
+                font=ctk.CTkFont(size=14, weight="bold"), text_color=self.accent
+            ).pack(anchor="w", padx=18, pady=(12, 8))
+            
+            for item in items:
+                ctk.CTkLabel(
+                    card, text=item,
+                    font=ctk.CTkFont(size=12), text_color=self.accent_dim,
+                    anchor="w", justify="left"
+                ).pack(anchor="w", padx=18, pady=2)
+            
+            ctk.CTkFrame(card, fg_color="transparent", height=10).pack()
 
     def _create_footer(self):
         """Create footer with credits."""
